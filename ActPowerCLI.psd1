@@ -12,7 +12,7 @@
 RootModule = 'ActPowerCLI.psm1'
 
 # Version number of this module.
-ModuleVersion = '10.0.1.26'
+ModuleVersion = '10.0.1.27'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -108,6 +108,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        ## [10.0.1.27] 2020-    
+        Improve Connect-Act to ensure returned messages from connect failures are consistently useful.
+
         ## [10.0.1.26] 2020-09-13
         Updates to allow this version to run on PS5.  
 

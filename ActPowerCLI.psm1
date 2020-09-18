@@ -1,5 +1,5 @@
 # # Version number of this module.
-# ModuleVersion = '10.0.1.26'
+# ModuleVersion = '10.0.1.27'
 function psfivecerthandler
 {
     if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
@@ -243,29 +243,39 @@ function  Connect-Act([string]$acthost, [string]$actuser, [string]$password, [st
     {
         $RestError = $_
     }
-    if ($RestError -like "The operation was canceled.")
+    if (($RestError -like "The operation was canceled.") -or ($RestError -like "The operation has timed out."))
     {
         Get-ActErrorMessage -messagetoprint "No response was received from $acthost after 15 seconds"
         return;
     }
-    elseif ($RestError -like "Connection refused")
+    elseif (($RestError -like "Connection refused") -or ($RestError -like "The remote server returned an error: (400) Bad Request.") -or ($RestError -like "Response status code does not indicate success:*"))
     {
-        Get-ActErrorMessage -messagetoprint "Connection refused received from $acthost"
+        Get-ActErrorMessage -messagetoprint "Connection refused received from $acthost."
+        return;
+    }
+    elseif ($RestError -like "The remote server returned an error: (401) Unauthorized.")
+    {
+        Get-ActErrorMessage -messagetoprint "Login failed to $acthost.  Check your username and password"
+        return;
+    }
+    elseif ($RestError -like "*err_code* : 10011*")
+    {
+        Get-ActErrorMessage -messagetoprint "Login failed to $acthost.  You may be trying to login to an AGM"
         return;
     }
     elseif ($RestError) 
     {
         $loginfailure = Test-ActJSON $RestError
-        if ( ($loginfailure.err_code) -and (!($loginfailure.errormessage)) )
+        if ( ($loginfailure.err_code) -and (!($loginfailure.errormessage)) ) 
         {
-            Get-ActErrorMessage -messagetoprint "Login failed.  You may be trying to login to an AGM"
+            Get-ActErrorMessage -messagetoprint "Login failed to $acthost.  You may be trying to login to an AGM"
         }
         else
         {
             $loginfailure
         }
     }
-    else
+    elseif ($resp.rights)
     {
         $env:ACTPRIVILEGES = $resp.rights
         $env:ACTSESSIONID = $resp.sessionid
@@ -334,6 +344,11 @@ function  Connect-Act([string]$acthost, [string]$actuser, [string]$password, [st
         
         # now we create functions for SARG
         New-SARGFuncs
+    }
+    else 
+    {
+        Get-ActErrorMessage -messagetoprint "Login failed to $acthost."
+        return;
     }
 } 
 
