@@ -120,7 +120,7 @@ function  Connect-Act([string]$acthost, [string]$actuser, [string]$password, [st
     {
         Try 
         {
-            $resp = Invoke-RestMethod -Uri https://$acthost/actifio/api/version -TimeoutSec 15
+            $null = Invoke-RestMethod -Uri https://$acthost/actifio/api/version -TimeoutSec 15
         } 
         Catch 
         { 
@@ -248,7 +248,7 @@ function  Connect-Act([string]$acthost, [string]$actuser, [string]$password, [st
         Get-ActErrorMessage -messagetoprint "No response was received from $acthost after 15 seconds"
         return;
     }
-    elseif (($RestError -like "Connection refused") -or ($RestError -like "The remote server returned an error: (400) Bad Request.") -or ($RestError -like "Response status code does not indicate success:*"))
+    elseif (($RestError -like "Connection refused") -or ($RestError -like "The remote server returned an error: (400) Bad Request.") -or ($RestError -like "Response status code does not indicate success:*") -or ($RestError -like "*Page not found*"))
     {
         Get-ActErrorMessage -messagetoprint "Connection refused received from $acthost."
         return;
